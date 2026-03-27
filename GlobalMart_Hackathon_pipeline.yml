@@ -1,0 +1,20 @@
+id: acd501f0-4a28-4445-827e-a69c937da667
+pipeline_type: WORKSPACE
+name: GlobalMart_Hackathon
+libraries:
+  - glob:
+      include: /Workspace/Users/yogitha.lakshmi@simbustech.com/GlobalMart_DataIntelligence/bronze/Bronze_ingestion_pipeline
+  - glob:
+      include: /Workspace/Users/yogitha.lakshmi@simbustech.com/GlobalMart_DataIntelligence/gold/gold_dim_fact_tables
+  - glob:
+      include: /Workspace/Users/yogitha.lakshmi@simbustech.com/GlobalMart_DataIntelligence/silver/silver_temporary_views
+  - glob:
+      include: /Workspace/Users/yogitha.lakshmi@simbustech.com/GlobalMart_DataIntelligence/silver/silver_ingestion_pipeline
+schema: bronze
+continuous: false
+development: false
+photon: true
+channel: CURRENT
+catalog: globalmart_dev
+serverless: true
+root_path: /Workspace/Users/yogitha.lakshmi@simbustech.com/GlobalMart_DataIntelligence
