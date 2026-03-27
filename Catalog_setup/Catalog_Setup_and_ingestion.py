@@ -10,6 +10,7 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,Create GlobalMart Dev Catalog with Bronze Silver Gold S ...
 spark.sql("""
     CREATE CATALOG IF NOT EXISTS globalmart_dev
     COMMENT 'GlobalMart Data Intelligence Platform — POC catalog.
@@ -29,6 +30,7 @@ print("Catalog globalmart_dev: ready")
 
 # COMMAND ----------
 
+# DBTITLE 1,Set Active Catalog to Globalmart Dev Environment
 spark.sql("USE CATALOG globalmart_dev")
 print("Active catalog: globalmart_dev")
 
@@ -36,39 +38,39 @@ print("Active catalog: globalmart_dev")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #CREATE BRONZE,SILVER AND GOLD SCHEMA
+# MAGIC #CREATE BRONZE SCHEMA
 # MAGIC - Bronze schema holds raw ingestion tables only — one per entity.
 # MAGIC
 
 # COMMAND ----------
 
+# DBTITLE 1,Initialize GlobalMart Dev Schemas for Bronze Silver Gol ...
 spark.sql("""
     CREATE SCHEMA IF NOT EXISTS globalmart_dev.bronze
     COMMENT 'Bronze layer — raw ingestion from all 6 regional source systems.
              Tables: customers, orders, transactions, returns, products, vendors.
              Data is loaded exactly as received — no transformations applied.'
 """)
- 
+
 print("Schema globalmart_dev.bronze: ready")
- 
+
 spark.sql("""
     CREATE SCHEMA IF NOT EXISTS globalmart_dev.silver
     COMMENT 'Silver layer — cleansed and validated data from Bronze.
              Tables: customers, orders, transactions, returns, products, vendors.
              Data quality checks and standardization applied.'
 """)
- 
+
 print("Schema globalmart_dev.silver: ready")
- 
+
 spark.sql("""
     CREATE SCHEMA IF NOT EXISTS globalmart_dev.gold
     COMMENT 'Gold layer — star schema for analytics and reporting.
              Tables: fact and dimension tables derived from Silver.
              Data is modeled for BI and GenAI use cases.'
 """)
- 
+
 print("Schema globalmart_dev.gold: ready")
- 
 
 # COMMAND ----------
 
@@ -85,6 +87,7 @@ print("Schema globalmart_dev.gold: ready")
 
 # COMMAND ----------
 
+# DBTITLE 1,Initialize and Inspect GlobalMart Retail Data Volume Fi ...
 VOLUME_PATH = "/Volumes/globalmart_dev/default/globalmart_retail_data"
 
 # Create the volume if it does not exist
@@ -97,10 +100,10 @@ try:
 except Exception as e:
     print(f"Error creating volume: {e}")
 
-# Upload the folder to the volume (assumes local folder path is available)
-local_folder_path = "/dbfs/tmp/GlobalMart_Retail_Data"  
-dbutils.fs.cp(local_folder_path, f"{VOLUME_PATH}/GlobalMart_Retail_Data", recurse=True)
-print("Folder uploaded to volume.")
+# # Upload the folder to the volume (assumes local folder path is available)
+# local_folder_path = "/dbfs/tmp/GlobalMart_Retail_Data"  
+# dbutils.fs.cp(local_folder_path, f"{VOLUME_PATH}/GlobalMart_Retail_Data", recurse=True)
+# print("Folder uploaded to volume.")
 
 files = dbutils.fs.ls(f"{VOLUME_PATH}/GlobalMart_Retail_Data")
 print(f"Root-level entries in volume ({len(files)} items):")
@@ -118,6 +121,7 @@ for item in files:
 
 # COMMAND ----------
 
+# DBTITLE 1,Validate and Report GlobalMart Retail Data Volume Files
 def walk_volume(path):
     """Recursively list all files under a volume path."""
     all_files = []
@@ -159,64 +163,6 @@ else:
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC # RBAC: ENGINEERING ACCESS ON BRONZE SCHEMA
-# MAGIC - Engineering group needs full privileges on the bronze schema to:
-# MAGIC    - Run and monitor the DLT pipeline
-# MAGIC    - Query Bronze tables directly for debugging
-# MAGIC    - Create and drop tables during pipeline development
-
-# COMMAND ----------
-
-# DBTITLE 1,Cell 12
-# Create the engineering group if it doesn't exist
-try:
-    spark.sql("CREATE GROUP globalmart_engineering")
-    print("Created group: globalmart_engineering")
-except Exception as e:
-    if "PRINCIPAL_ALREADY_EXISTS" in str(e):
-        print("Group globalmart_engineering already exists")
-    else:
-        raise
-
-spark.sql("""
-    GRANT USE SCHEMA ON SCHEMA globalmart_dev.bronze
-    TO `globalmart_engineering`
-""")
-
-spark.sql("""
-    GRANT SELECT ON SCHEMA globalmart_dev.bronze
-    TO `globalmart_engineering`
-""")
-
-spark.sql("""
-    GRANT MODIFY ON SCHEMA globalmart_dev.bronze
-    TO `globalmart_engineering`
-""")
-
-spark.sql("""
-    GRANT CREATE TABLE ON SCHEMA globalmart_dev.bronze
-    TO `globalmart_engineering`
-""")
-
-print("RBAC grants on globalmart_dev.bronze: applied for globalmart_engineering")
-
-
-spark.sql("""
-    GRANT READ VOLUME ON VOLUME globalmart_dev.default.globalmart_retail_data
-    TO `globalmart_engineering`
-""")
-
-spark.sql("""
-    GRANT WRITE VOLUME ON VOLUME globalmart_dev.default.globalmart_retail_data
-    TO `globalmart_engineering`
-""")
-
-print("Volume grants: globalmart_engineering can read and write the raw data volume")
-
-
-# COMMAND ----------
-
-# MAGIC %md
 # MAGIC #VERIFY SETUP BEFORE RUNNING PIPELINE
 # MAGIC
 # MAGIC - Final check: confirm catalog and schema exist and are queryable.
@@ -224,6 +170,7 @@ print("Volume grants: globalmart_engineering can read and write the raw data vol
 
 # COMMAND ----------
 
+# DBTITLE 1,Verify GlobalMart Dev Catalog Bronze Schema and Tables
 # =============================================================================
 
 
@@ -249,14 +196,3 @@ else:
     print("\nNo tables in globalmart_dev.bronze yet")
 
 print("\nCatelog Setup complete")
-
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC CREATE SCHEMA IF NOT EXISTS SILVER
