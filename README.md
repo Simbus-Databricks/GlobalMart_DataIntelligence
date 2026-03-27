@@ -434,15 +434,5 @@ Internal use only - GlobalMart Data Intelligence Platform
 
 ---
 
-## Contact & Support
-
-For questions or issues:
-- **Email**: yogitha.lakshmi@simbustech.com
-- **Workspace**: `/Users/yogitha.lakshmi@simbustech.com/GlobalMart_DataIntelligence/`
-- **Catalog**: `globalmart_dev`
-
----
-
 **Last Updated**: March 27, 2026
 **Version**: 1.0
-**Status**: Production Ready
